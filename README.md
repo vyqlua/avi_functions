@@ -5,6 +5,8 @@ Functions for calculating and plotting AVI variables easily
 
 # Current Status: 22 Sep 2024
 
+To import these functions in R, use `source("https://raw.githubusercontent.com/vyqlua/avi_functions/refs/heads/main/ipsatize_fn.R")`.
+
 Created functions for ipsatizing AVI items and calculating composite AVI scores. [`ipsatize_avi(data, item_stem, full_avi = FALSE)`]
 
 All AVI items should start with the same starting string (e.g., "i." for ideal affect AVI items), and the items should contain the names of the emotion (or shortened 4-letter versions of the names. for `sad`, it can be labelled as `sad` or `sadx`). The different AVI composite scores are calculated as follows:

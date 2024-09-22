@@ -5,14 +5,14 @@
 # How to use:
 
   # ipsatize_avi(data, item_stem, full_avi = FALSE)
-    #  1. At the top of your script, specify `source("ipsatize_fn.R")`. 
+    #  1. At the top of your script, specify `source("https://raw.githubusercontent.com/vyqlua/avi_functions/refs/heads/main/ipsatize_fn.R")`. 
     #     Note that the `ipsatize_fn.R` file (i.e., this file) needs to be the correct working directory
     #  2. Ensure all AVI subscale items have a similar item stem (e.g,. "r.sadx", "r.quiet", etc.)
     #  3. Use function. Your script should look something like this:
     #     `data <- data %>% ipsatize_avi("r.")`
 
   # plot_avi(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsatized_only = TRUE)
-    #  1. At the top of your script, specify `source("ipsatize_fn.R")`. 
+    #  1. At the top of your script, specify `source("https://raw.githubusercontent.com/vyqlua/avi_functions/refs/heads/main/ipsatize_fn.R")`. 
     #     Note that the `ipsatize_fn.R` file (i.e., this file) needs to be the correct working directory
     #  2. Ensure dataframe is NOT already in long format.
     #  3. Use function. Your script should look something like this:
