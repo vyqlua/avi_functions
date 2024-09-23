@@ -158,7 +158,6 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL) {
     temp_data2 <- merge(data, temp_data2, by = common_columns)
     return(temp_data2)
 }
-ß
 
 # --------------------------------------------
 
