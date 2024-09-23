@@ -23,7 +23,7 @@
 
 # --------------------------------------------
 
-ipsatize_avi <- function(data, item_stem, full_avi = FALSE) {
+ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL) {
   
   library(dplyr)
   library(stringr)
@@ -50,7 +50,13 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE) {
     newvars <- setdiff(names(temp_data), names(data))
     print(newvars)
     
-    temp_data2 <- temp_data %>% 
+    if (!is.null(remove)) {
+      temp_data2 <- temp_data %>% dplyr::select(-contains(remove))
+    } else {
+      temp_data2 <- temp_data
+      }
+    
+    temp_data2 <- temp_data2 %>% 
       rowwise() %>%
       dplyr::mutate(
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP") := 
@@ -123,21 +129,21 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE) {
                     paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG_i"),
                     paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN_i")),
       
-      items = c(temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+      items = c(temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("fear|host|nerv|angr", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("fear|host|nerv|angr", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_ip") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("fear|host|nerv|angr", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("fear|host|nerv|angr", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")
                 )
     )
     
@@ -147,9 +153,12 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE) {
     }
     
     print(avi_codebook)
+    
+    common_columns <- intersect(names(data), names(temp_data2))
+    temp_data2 <- merge(data, temp_data2, by = common_columns)
     return(temp_data2)
 }
-
+ß
 
 # --------------------------------------------
 
