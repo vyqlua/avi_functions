@@ -31,7 +31,7 @@ Note that functions do not automatically calculate `POS` and `NEG`. Add argument
 
 This is a function for plotting composite AVI scores and getting descriptives for AVI scores. 
 
-If the plot comes out and the colors are flipped, indicate `flip_culture = TRUE`. If you want to plot the raw scores as well, indicate `ipsatized_only = FALSE`. If you want to plot `POS` and `NEG` as well, indicate `full_avi = TRUE`.
+If the plot comes out and the colors are flipped, indicate `flip_color = TRUE`. If you want to plot the raw scores as well, indicate `ipsatized_only = FALSE`. If you want to plot `POS` and `NEG` as well, indicate `full_avi = TRUE`.
 
 </span>
 
