@@ -10,7 +10,7 @@ ___
 ### to use:
 To import these functions in R, use `source("https://raw.githubusercontent.com/vyqlua/avi_functions/refs/heads/main/ipsatize_fn.R")`.
 
-1. `ipsatize_avi(data, item_stem, full_avi = FALSE, remove = NULL)`
+1. `ipsatize_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE)`
 
 This is a function for ipsatizing AVI items and calculating composite AVI scores. 
 
@@ -25,7 +25,7 @@ All AVI items should start with the same starting string (e.g., "i." for ideal a
 - POS = happ | cont | sati
 - NEG = unha | sad | lone
 
-Note that functions do not automatically calculate `POS` and `NEG`. Add argument `full_avi = TRUE` if you want to calculate those two variables as well. If you'd like to remove any items (e.g., `euphoric`) from the computation of the composite score(s), specify `remove = "euphoric"`. The remove argument can also be a vector (e.g., `c("euphoric","elated")`), and the function does a `dplyr::select(contains())` search on the specified string/ vector.
+Note that functions do not automatically calculate `POS` and `NEG`. Add argument `full_avi = TRUE` if you want to calculate those two variables as well. If you'd like to remove any items (e.g., `euphoric`) from the computation of the composite score(s), specify `remove = "euphoric"`. The remove argument can also be a vector (e.g., `c("euphoric","elated")`), and the function does a `dplyr::select(contains())` search on the specified string/ vector. Add argument `maximizing_pos = TRUE` to calculate maximizing positivity (ideal HAP, POS, and NEG minus ideal HAN, NEG, and LAN).
 
 2. `plot_avi(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsatized_only = TRUE)`
 
@@ -42,3 +42,5 @@ ___
 *22 Sep 2024*: Uploaded first version of functions
 
 *23 Sep 2024*: Modified `ipsatize_avi()` function to allow for removing specific items in composite score (since `euphoric` is often removed to improve internal reliability of HAP composite scores)
+
+*25 Sep 2025*: Updated function to be able to calculate maximizing positivity.

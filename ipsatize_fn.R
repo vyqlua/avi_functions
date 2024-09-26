@@ -23,7 +23,7 @@
 
 # --------------------------------------------
 
-ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL) {
+ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE) {
   
   library(dplyr)
   library(stringr)
@@ -108,6 +108,44 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL) {
         ) %>% ungroup()
     }
     
+    if (maximizing_pos == TRUE) {
+      temp_data2 <- temp_data2 %>% 
+        rowwise() %>%
+        dplyr::mutate(
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP") := 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_ip") & 
+                            matches("enth|exci|elat|euph|
+                                    rela|calm|peac|sere|
+                                    happ|cont|sati", ignore.case = TRUE)), na.rm = TRUE),
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP_ip") := 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_ip") & 
+                            matches("enth|exci|elat|euph|
+                                    rela|calm|peac|sere|
+                                    happ|cont|sati", ignore.case = TRUE)), na.rm = TRUE),
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN") := 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_ip") & 
+                            matches("fear|host|nerv|angr|
+                                    unha|sad|lone|
+                                    dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE),
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN_ip") := 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_ip") & 
+                            matches("fear|host|nerv|angr|
+                                    unha|sad|lone|
+                                    dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE))
+      temp_data2 <- temp_data2 %>% 
+        rowwise() %>%
+        dplyr::mutate(
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos") := 
+            !!sym(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP")) - 
+            !!sym(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN")),
+          !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos_ip") := 
+            !!sym(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP_ip")) - 
+            !!sym(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN_ip")))
+      
+      temp_data3 <- temp_data2 %>% dplyr::select(contains("HAPPOSLAP"), contains("HANNEGLAN"))
+      temp_data2 <- temp_data2 %>% dplyr::select(-contains("HAPPOSLAP"), -contains("HANNEGLAN"))
+    }
+          
     message("AVI Variables Computed: ")
     newvars2 <- setdiff(names(temp_data2), names(temp_data))
     print(newvars2)
@@ -145,13 +183,26 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL) {
                 temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_ip") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")
                 )
-    )
+      )
     
     if (full_avi == FALSE) {
       avi_codebook <- avi_codebook %>%
         dplyr::filter(!str_detect(variables, "POS") & !str_detect(variables, "NEG"))
     }
     
+    if(maximizing_pos == TRUE) {
+      avi_codebook <- 
+        rbind(avi_codebook,
+              data.frame(variables = c(temp_data2 %>% dplyr::select(contains("MaxPos") & !contains("ip")) %>% colnames(),
+                                      temp_data2 %>% dplyr::select(contains("MaxPos") & contains("ip")) %>% colnames()),
+                         items = c(paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & !contains("ip")) %>% colnames(), "-",
+                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & !contains("ip")) %>% colnames(),
+                                         sep = " "),
+                                   paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & contains("ip")) %>% colnames(), "-",
+                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & contains("ip")) %>% colnames(),
+                                         sep = " "))))
+    }
+  
     print(avi_codebook)
     
     common_columns <- intersect(names(data), names(temp_data2))
