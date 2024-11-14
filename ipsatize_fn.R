@@ -185,8 +185,8 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
     if(maximizing_pos == TRUE) {
       avi_codebook <- 
         rbind(avi_codebook,
-              data.frame(variables = c(temp_data2 %>% dplyr::select(contains("MaxPos") & !contains("ip")) %>% colnames(),
-                                       temp_data2 %>% dplyr::select(contains("MaxPos") & contains("ip")) %>% colnames(),
+              data.frame(variables = c(temp_data2 %>% dplyr::select(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos")) %>% colnames(),
+                                       temp_data2 %>% dplyr::select(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos_ip")) %>% colnames(),
                                        "HAPPOSLAP (intermediate variable)", "HANNEGLAN (intermediate variable)"),
                          items = c(paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & !contains("ip")) %>% colnames(), "-",
                                          temp_data3 %>% dplyr::select(contains("HANNEGLAN") & !contains("ip")) %>% colnames(),
