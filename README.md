@@ -44,3 +44,5 @@ ___
 *23 Sep 2024*: Modified `ipsatize_avi()` function to allow for removing specific items in composite score (since `euphoric` is often removed to improve internal reliability of HAP composite scores)
 
 *25 Sep 2025*: Updated function to be able to calculate maximizing positivity.
+
+*27 Jan 2026*: Made the codebook that's printed mapping successfully computed AVI variables to the items used in the computation much much prettier and less annoying to read when printed.
