@@ -323,15 +323,15 @@ i_ip <-
   jtools::theme_apa() 
 
 if (ipsatized_only == FALSE) {
-  print(plot_data %>% dplyr::filter(grepl("r", AVI)) %>% arrange(AVI_order, Culture))
-  print(plot_data %>% dplyr::filter(!grepl("r", AVI)) %>% arrange(AVI_order, Culture))
+  print(plot_data %>% dplyr::filter(grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
+  print(plot_data %>% dplyr::filter(!grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
   print(r_nonip)
   print(r_ip)
   print(i_nonip)
   print(i_ip)
 } else {
-  print(plot_data %>% dplyr::filter(grepl("_ip", AVI), grepl("r", AVI)) %>% arrange(AVI_order, Culture))
-  print(plot_data %>% dplyr::filter(grepl("_ip", AVI), !grepl("r", AVI)) %>% arrange(AVI_order, Culture))
+  print(plot_data %>% dplyr::filter(grepl("_ip", AVI), grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
+  print(plot_data %>% dplyr::filter(grepl("_ip", AVI), !grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
   print(r_ip)
   print(i_ip)
 }
