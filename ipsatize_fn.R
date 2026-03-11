@@ -204,20 +204,7 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
                                    )))
     }
     
-    nice_table <- function(df, text_col = 2, width = "35em") {
-      knitr::kable(df, format = "html") |>
-        kableExtra::kable_styling(
-          full_width = FALSE,
-          font_size = 11
-        ) |>
-        kableExtra::column_spec(
-          text_col,
-          width = width,
-          extra_css = "word-wrap: break-word;"
-        )
-    }
-    
-    print(avi_codebook %>% nice_table())
+    print(avi_codebook)
     
     common_columns <- intersect(names(data), names(temp_data2))
     temp_data2 <- merge(data, temp_data2, by = common_columns)
