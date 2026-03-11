@@ -47,4 +47,4 @@ ___
 
 ~~*27 Jan 2026*: Made the codebook that's printed mapping successfully computed AVI variables to the items used in the computation much much prettier and less annoying to read when printed.~~
 
-~~*10 Mar 2026*: Saved codebook to environment instead of printing it out.
+*10 Mar 2026*: Saved codebook to environment instead of printing it out.
