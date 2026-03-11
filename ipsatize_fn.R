@@ -204,10 +204,12 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
                                    )))
     }
     
-    print(avi_codebook)
-    
     common_columns <- intersect(names(data), names(temp_data2))
     temp_data2 <- merge(data, temp_data2, by = common_columns)
+    
+    assign("avi_codebook", avi_codebook, envir = .GlobalEnv)
+    message("Check 'avi_codebook' in environment to check how each AVI variable was calculated.")
+    
     return(temp_data2)
 }
 
