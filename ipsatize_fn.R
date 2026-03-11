@@ -264,6 +264,9 @@ if (flip_color == TRUE) {
   colours <- c("#F49070", "#52B2CF")
 }
 
+plot_data <- plot_data %>%
+  mutate(!!group_id := factor(.data[[group_id]]))
+
 if (ipsatized_only == FALSE) {
   r_nonip <- 
     ggplot(plot_data %>% 
@@ -297,7 +300,7 @@ if (ipsatized_only == FALSE) {
   i_nonip <- 
     ggplot(plot_data %>% 
            dplyr::filter(
-             !grepl(_i, AVI),
+             !grepl("_i", AVI),
              !grepl("r", AVI)), 
          aes(x = AVI, y = mean, fill = !!sym(group_id))) +
     scale_fill_manual(values = colours) +
