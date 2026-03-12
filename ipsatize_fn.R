@@ -225,12 +225,12 @@ plot_avi <- function(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsat
   
 plot_data <- data %>% dplyr::select(
     group_id, 
-    contains("HAP") & !contains("HAPP"), 
-    contains("LAP"), 
-    contains("POS") & !contains("Aff"), 
-    contains("HAN"), 
-    contains("LAN"), 
-    contains("NEG") & !contains("Aff")) 
+    contains("HAP", ignore.case = FALSE) & !contains("HAPP"), 
+    contains("LAP", ignore.case = FALSE), 
+    contains("POS", ignore.case = FALSE) & !contains("Aff"), 
+    contains("HAN", ignore.case = FALSE), 
+    contains("LAN", ignore.case = FALSE), 
+    contains("NEG", ignore.case = FALSE) & !contains("Aff")) 
   
   plot_data <- plot_data %>% 
     pivot_longer(cols = -group_id,
