@@ -60,29 +60,29 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
       rowwise() %>%
       dplyr::mutate(
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP") := 
-          mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                           matches("enth|exci|elat|euph", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP") := 
-          mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                           matches("rela|calm|peac|sere", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN") := 
-          mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                           matches("fear|host|nerv", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN") := 
-          mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                           matches("dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE),
         
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP_i") := 
-          mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                           matches("enth|exci|elat|euph", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP_i") := 
-          mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                           matches("rela|calm|peac|sere", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN_i") := 
-          mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                           matches("fear|host|nerv", ignore.case = TRUE)), na.rm = TRUE),
         !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN_i") := 
-          mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+          mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                           matches("dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE)
         ) %>% ungroup()
  
@@ -92,17 +92,17 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
         rowwise() %>%
         dplyr::mutate(
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS") := 
-            mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                             matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")), na.rm = TRUE),
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG") := 
-            mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                             matches("unha|sad|lone", ignore.case = TRUE)), na.rm = TRUE),
           
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS_i") := 
-            mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                             matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")), na.rm = TRUE),
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG_i") := 
-            mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                             matches("unha|sad|lone", ignore.case = TRUE)), na.rm = TRUE)
           
         ) %>% ungroup()
@@ -113,16 +113,16 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
         rowwise() %>%
         dplyr::mutate(
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP") := 
-            mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                             matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", ignore.case = TRUE) & !contains("unha")), na.rm = TRUE),
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP_i") := 
-            mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                             matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", ignore.case = TRUE) & !contains("unha")), na.rm = TRUE),
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN") := 
-            mean(c_across(starts_with(paste(item_stem)) & !contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i") & 
                             matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE),
           !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN_i") := 
-            mean(c_across(starts_with(paste(item_stem)) & contains("_i") & 
+            mean(c_across(starts_with(paste(item_stem)) & ends_with("_i") & 
                             matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", ignore.case = TRUE)), na.rm = TRUE))
       temp_data2 <- temp_data2 %>% 
         rowwise() %>%
@@ -159,21 +159,21 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
                     paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG_i"),
                     paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN_i")),
       
-      items = c(temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+      items = c(temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !contains("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("happ|cont|sati", ignore.case = TRUE) & !contains("unha")) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
                 
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
-                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+                temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")
                 )
       )
     
@@ -188,17 +188,17 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
               data.frame(variables = c(temp_data2 %>% dplyr::select(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos")) %>% colnames(),
                                        temp_data2 %>% dplyr::select(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "MaxPos_i")) %>% colnames(),
                                        "HAPPOSLAP (int)", "HANNEGLAN (int)"),
-                         items = c(paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & !contains("_i")) %>% colnames(), "-",
-                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & !contains("_i")) %>% colnames(),
+                         items = c(paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & !ends_with("_i")) %>% colnames(), "-",
+                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & !ends_with("_i")) %>% colnames(),
                                          sep = " "),
-                                   paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & contains("_i")) %>% colnames(), "-",
-                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & contains("_i")) %>% colnames(),
+                                   paste(temp_data3 %>% dplyr::select(contains("HAPPOSLAP") & ends_with("_i")) %>% colnames(), "-",
+                                         temp_data3 %>% dplyr::select(contains("HANNEGLAN") & ends_with("_i")) %>% colnames(),
                                          sep = " "),
-                                   temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & 
+                                   temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & 
                                                                   matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", ignore.case = TRUE) &
                                                                   !contains("unhappy")) %>% 
                                      names() %>% paste(collapse = ", "),
-                                   temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & contains("_i") & 
+                                   temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & 
                                                                   matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", ignore.case = TRUE)) %>% 
                                      names() %>% paste(collapse = ", ")
                                    )))

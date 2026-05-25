@@ -50,3 +50,5 @@ ___
 *10 Mar 2026*: Saved codebook to environment instead of printing it out.
 
 *11 Mar 2026*: Changed tail of ipsatized variables to _i instead of _ip
+
+*24 May 2026*: Changed selecting logic from contain("_i") to ends_with("_i")
