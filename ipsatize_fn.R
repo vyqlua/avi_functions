@@ -795,35 +795,73 @@ alphas_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maximiz
 
 # --------------------------------------------
 
-plot_avi <- function(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsatized_only = TRUE) {
+plot_avi <- function(data, group_id = NULL, full_avi = FALSE, specify_colors = NULL, ipsatized_only = TRUE) {
   
   library(ggplot2)
   
-  if (!group_id %in% colnames(data)) {
-    "Error: Specified `group_id` column not found in the dataset."
+  if (!is.null(group_id)){
+    if (!group_id %in% colnames(data)) {
+      return("Error: Specified `group_id` column not found in the dataset.")
+    }}
+  
+plot_data_all <- data %>% dplyr::mutate(row = row_number())
+  
+plot_data <- plot_data_all %>% dplyr::select(
+  row, 
+  contains("HAP", ignore.case = FALSE) & !contains("HAPP"), 
+  contains("LAP", ignore.case = FALSE), 
+  contains("POS", ignore.case = FALSE) & !contains("Aff"), 
+  contains("HAN", ignore.case = FALSE), 
+  contains("LAN", ignore.case = FALSE), 
+  contains("NEG", ignore.case = FALSE) & !contains("Aff")) 
+
+if (length(colnames(plot_data)) < 5){
+  return("Error: Unable to locate AVI variables. (Note: they should contain the strings 'HAP', 'LAP', 'HAN', 'LAN', and optionally 'POS', 'NEG'. Additionally, actual affect variable names should contain 'r', and ideal affect variable names should NOT contain 'r'.)")
+} else{
+    print("AVI variables identified:")
+    print(colnames(plot_data %>% dplyr::select(-row)))
   }
-  
-plot_data <- data %>% dplyr::select(
-    group_id, 
-    contains("HAP", ignore.case = FALSE) & !contains("HAPP"), 
-    contains("LAP", ignore.case = FALSE), 
-    contains("POS", ignore.case = FALSE) & !contains("Aff"), 
-    contains("HAN", ignore.case = FALSE), 
-    contains("LAN", ignore.case = FALSE), 
-    contains("NEG", ignore.case = FALSE) & !contains("Aff")) 
-  
-  plot_data <- plot_data %>% 
-    pivot_longer(cols = -group_id,
-                 names_to = "AVI",
-                 values_to = "value")
-  
+
+if (!is.null(group_id)){
+  plot_data <- 
+    merge(
+      plot_data,
+      plot_data_all %>% dplyr::select(
+        row, group = !!sym(group_id)),
+      by = "row"
+      )
+  }
+
+id_cols <- intersect(c("group", "row"), names(plot_data))
+
 plot_data <- plot_data %>%
-  group_by(!!sym(group_id), AVI) %>%
+  pivot_longer(
+    cols = -all_of(id_cols),
+    names_to = "AVI",
+    values_to = "value"
+  )
+  
+if (!is.null(group_id)) {
+  plot_data <- plot_data %>%
+    group_by(group, AVI) %>%
     summarize(
       mean = mean(value, na.rm = TRUE),
       sd = sd(value, na.rm = TRUE),
-      se = sd(value, na.rm = TRUE)/sqrt(length(value)))
-
+      se = sd(value, na.rm = TRUE) / sqrt(length(value)),
+      .groups = "drop"
+    )
+  plot_data <- plot_data %>%
+    dplyr::mutate(group = factor(group))
+} else {
+  plot_data <- plot_data %>%
+    group_by(AVI) %>%
+    summarize(
+      mean = mean(value, na.rm = TRUE),
+      sd = sd(value, na.rm = TRUE),
+      se = sd(value, na.rm = TRUE) / sqrt(length(value)),
+      .groups = "drop")
+}
+    
 plot_data <- plot_data %>%
   mutate(
     AVI_order = case_when(
@@ -835,87 +873,185 @@ plot_data <- plot_data %>%
       grepl("LAN", AVI) ~ 6,  
       TRUE ~ 7               
     ),
-    AVI = factor(AVI, levels = unique(AVI[order(AVI_order)])) # Reorder based on 'AVI_order'
+    AVI = factor(AVI, levels = unique(AVI[order(AVI_order)])) 
+    # Reorder based on 'AVI_order'
   )
 
-if (flip_color == TRUE) {
+if (is.null(specify_colors)) {
   colours <- c("#52B2CF", "#F49070")
 } else {
-  colours <- c("#F49070", "#52B2CF")
+  colours <- specify_colors
 }
 
-plot_data <- plot_data %>%
-  mutate(!!group_id := factor(.data[[group_id]]))
+# actual affect plots
 
 if (ipsatized_only == FALSE) {
-  r_nonip <- 
+  
+  if (!is.null(group_id)) {
+    
+    if (plot_data %>% dplyr::filter(!grepl("_i", AVI), grepl("r", AVI)) %>%
+        colnames() %>% length() > 1) {
+      r_nonip <- 
+        ggplot(plot_data %>% 
+                 dplyr::filter(
+                   !grepl("_i", AVI),
+                   grepl("r", AVI)), 
+               aes(x = AVI, y = mean, fill = group)) +
+        scale_fill_manual(values = colours) +
+        geom_bar(stat='identity', position='dodge') +
+        geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+        xlab("AVI") +
+        ylab("Non-Ipsatized Scores") +
+        ggtitle("Group Differences in Actual Affect") +
+        jtools::theme_apa() 
+    } }
+  
+  
+  else{
+    if (plot_data %>% dplyr::filter(!grepl("_i", AVI), grepl("r", AVI)) %>%
+        colnames() %>% length() > 1) {
+      r_nonip <- 
+        ggplot(plot_data %>% 
+                 dplyr::filter(
+                   !grepl("_i", AVI),
+                   grepl("r", AVI)), 
+               aes(x = AVI, y = mean)) +
+        geom_bar(stat='identity', position='dodge') +
+        geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+        xlab("AVI") +
+        ylab("Non-Ipsatized Scores") +
+        ggtitle("Actual Affect") +
+        jtools::theme_apa() }
+  }
+}
+
+
+if (!is.null(group_id)) {
+  r_ip <- 
     ggplot(plot_data %>% 
-           dplyr::filter(
-             !grepl("_i", AVI),
-             grepl("r", AVI)), 
-         aes(x = AVI, y = mean, fill = !!sym(group_id))) +
+             dplyr::filter(
+               grepl("_i", AVI),
+               grepl("r", AVI)), 
+           aes(x = AVI, y = mean, fill = group)) +
     scale_fill_manual(values = colours) +
     geom_bar(stat='identity', position='dodge') +
     geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
     xlab("AVI") +
-    ylab("Non-Ipsatized Scores") +
+    ylab("Ipsatized Scores") +
     ggtitle("Group Differences in Actual Affect") +
-    jtools::theme_apa() }
-
-r_ip <- 
-  ggplot(plot_data %>% 
-         dplyr::filter(
-           grepl("_i", AVI),
-           grepl("r", AVI)), 
-       aes(x = AVI, y = mean, fill = !!sym(group_id))) +
-  scale_fill_manual(values = colours) +
-  geom_bar(stat='identity', position='dodge') +
-  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
-  xlab("AVI") +
-  ylab("Ipsatized Scores") +
-  ggtitle("Group Differences in Actual Affect") +
-  jtools::theme_apa() 
-
-if (ipsatized_only == FALSE) {
-  i_nonip <- 
+    jtools::theme_apa() 
+} else {
+  r_ip <- 
     ggplot(plot_data %>% 
-           dplyr::filter(
-             !grepl("_i", AVI),
-             !grepl("r", AVI)), 
-         aes(x = AVI, y = mean, fill = !!sym(group_id))) +
+             dplyr::filter(
+               grepl("_i", AVI),
+               grepl("r", AVI)), 
+           aes(x = AVI, y = mean)) +
     scale_fill_manual(values = colours) +
     geom_bar(stat='identity', position='dodge') +
     geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
     xlab("AVI") +
-    ylab("Non-Ipsatized Scores") +
-    ggtitle("Group Differences in Ideal Affect") +
-    jtools::theme_apa() }
+    ylab("Ipsatized Scores") +
+    ggtitle("Actual Affect") +
+    jtools::theme_apa() 
+}
 
-i_ip <- 
-  ggplot(plot_data %>% 
-         dplyr::filter(
-           grepl("_i", AVI),
-           !grepl("r", AVI)), 
-       aes(x = AVI, y = mean, fill = !!sym(group_id))) +
-  scale_fill_manual(values = colours) +
-  geom_bar(stat='identity', position='dodge') +
-  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
-  xlab("AVI") +
-  ylab("Ipsatized Scores") +
-  ggtitle("Group Differences in Ideal Affect") +
-  jtools::theme_apa() 
+# ideal afect plots
 
 if (ipsatized_only == FALSE) {
-  print(plot_data %>% dplyr::filter(grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
-  print(plot_data %>% dplyr::filter(!grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
+  
+  if (!is.null(group_id)) {
+    
+    if (plot_data %>% dplyr::filter(!grepl("_i", AVI), !grepl("r", AVI)) %>%
+        colnames() %>% length() > 1) {
+      i_nonip <- 
+        ggplot(plot_data %>% 
+                 dplyr::filter(
+                   !grepl("_i", AVI),
+                   !grepl("r", AVI)), 
+               aes(x = AVI, y = mean, fill = group)) +
+        scale_fill_manual(values = colours) +
+        geom_bar(stat='identity', position='dodge') +
+        geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+        xlab("AVI") +
+        ylab("Non-Ipsatized Scores") +
+        ggtitle("Group Differences in Ideal Affect") +
+        jtools::theme_apa() 
+    } }
+  
+  
+  else{
+    if (plot_data %>% dplyr::filter(!grepl("_i", AVI), !grepl("r", AVI)) %>%
+        colnames() %>% length() > 1) {
+      i_nonip <- 
+        ggplot(plot_data %>% 
+                 dplyr::filter(
+                   !grepl("_i", AVI),
+                   !grepl("r", AVI)), 
+               aes(x = AVI, y = mean)) +
+        geom_bar(stat='identity', position='dodge') +
+        geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+        xlab("AVI") +
+        ylab("Non-Ipsatized Scores") +
+        ggtitle("Ideal Affect") +
+        jtools::theme_apa() }
+  }
+}
+
+
+if (!is.null(group_id)) {
+  i_ip <- 
+    ggplot(plot_data %>% 
+             dplyr::filter(
+               grepl("_i", AVI),
+               !grepl("r", AVI)), 
+           aes(x = AVI, y = mean, fill = group)) +
+    scale_fill_manual(values = colours) +
+    geom_bar(stat='identity', position='dodge') +
+    geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+    xlab("AVI") +
+    ylab("Ipsatized Scores") +
+    ggtitle("Group Differences in Ideal Affect") +
+    jtools::theme_apa() 
+} else {
+  i_ip <- 
+    ggplot(plot_data %>% 
+             dplyr::filter(
+               grepl("_i", AVI),
+               !grepl("r", AVI)), 
+           aes(x = AVI, y = mean)) +
+    scale_fill_manual(values = colours) +
+    geom_bar(stat='identity', position='dodge') +
+    geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = position_dodge(0.9), width = 0.1)+
+    xlab("AVI") +
+    ylab("Ipsatized Scores") +
+    ggtitle("Ideal Affect") +
+    jtools::theme_apa() 
+}
+
+
+if (ipsatized_only == FALSE) {
+  if (!is.null(group_id)) {
+    print(plot_data %>% dplyr::filter(grepl("r", AVI)) %>% arrange(AVI_order, group))
+    print(plot_data %>% dplyr::filter(!grepl("r", AVI)) %>% arrange(AVI_order, group)) }
+  else {
+    print(plot_data %>% dplyr::filter(grepl("r", AVI)) %>% arrange(AVI_order))
+    print(plot_data %>% dplyr::filter(!grepl("r", AVI)) %>% arrange(AVI_order))
+  }
   print(r_nonip)
   print(r_ip)
   print(i_nonip)
   print(i_ip)
 } else {
-  print(plot_data %>% dplyr::filter(grepl("_i", AVI), grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
-  print(plot_data %>% dplyr::filter(grepl("_i", AVI), !grepl("r", AVI)) %>% arrange(AVI_order, !!sym(group_id)))
+  if (!is.null(group_id)) {
+    print(plot_data %>% dplyr::filter(grepl("_i", AVI), grepl("r", AVI)) %>% arrange(AVI_order, group))
+    print(plot_data %>% dplyr::filter(grepl("_i", AVI), !grepl("r", AVI)) %>% arrange(AVI_order, group))}
+  else {
+    print(plot_data %>% dplyr::filter(grepl("_i", AVI), grepl("r", AVI)) %>% arrange(AVI_order))
+    print(plot_data %>% dplyr::filter(grepl("_i", AVI), !grepl("r", AVI)) %>% arrange(AVI_order))
+  }
   print(r_ip)
   print(i_ip)
 }
 }
+
