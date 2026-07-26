@@ -6,8 +6,9 @@ This helper script contains three functions for ipsatizing + calculating the AVI
 
 To import these functions in R, use `source("https://raw.githubusercontent.com/vyqlua/avi_functions/refs/heads/main/ipsatize_fn.R")`.
 
+</span>
 
-1. `ipsatize_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE)`
+#### `ipsatize_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE)`
 
 **Description:** This is a function for ipsatizing AVI items and calculating composite AVI scores. 
 All AVI items should start with the same starting string (e.g., "i." for ideal affect AVI items), and the items should contain the names of the emotion (or shortened 4-letter versions of the names. for `sad`, it can be labelled as `sad` or `sadx`). The different AVI composite scores are calculated as follows:
@@ -36,9 +37,9 @@ NEG = unha | sad | lone .
 
 `maximizing_pos` : defaults to `FALSE`. set to `TRUE` to calculate maximizing positivity scores (ideal HAP, POS, and NEG minus ideal HAN, NEG, and LAN).
 
+</span>
 
-
-2. `alphas_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE, group_id = NULL)`
+#### `alphas_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE, group_id = NULL)`
 
 **Description:** This is a function for calculating the alpha values of the AVI variables. Similar to the first function, all AVI items should start with the same item_stem, and the items should contain the names of the emotion.
 
@@ -56,8 +57,9 @@ NEG = unha | sad | lone .
 
 `group_id` : defaults to `FALSE`. optional argument to calculate avi alphas for specific subgroups (e.g., culture subgroups). specify a string indicating the name of the grouping variable.
 
+</span>
 
-3. `plot_avi(data, group_id = NULL, full_avi = FALSE, specify_colors = NULL, ipsatized_only = TRUE)`
+#### `plot_avi(data, group_id = NULL, full_avi = FALSE, specify_colors = NULL, ipsatized_only = TRUE)`
 
 **Description:** This is a function for plotting composite AVI scores and getting descriptives for AVI scores. It plots real and ideal affect (and will plot only either if your dataframe does not have either). If you used the above function to ipsatize and calculate your AVI scores, the dataframe would likely be well set up for this function.
 
