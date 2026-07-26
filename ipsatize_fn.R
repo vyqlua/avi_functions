@@ -28,11 +28,11 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
   library(dplyr)
   library(stringr)
   
-    temp_data <- data %>% 
-      rowwise() %>%
-      dplyr::mutate(
-        !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean") := mean(c_across(starts_with(paste(item_stem))), na.rm = TRUE),
-        !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd") := sd(c_across(starts_with(paste(item_stem))), na.rm = TRUE)) %>%
+  temp_data <- data %>% 
+    rowwise() %>%
+    dplyr::mutate(
+      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean") := mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE),
+      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd") := sd(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE)) %>%
     ungroup()
   
     temp_data <- temp_data %>%
@@ -212,6 +212,586 @@ ipsatize_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maxim
     
     return(temp_data2)
 }
+
+# --------------------------------------------
+
+alphas_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE, group_id = NULL) {
+  
+  library(dplyr)
+  library(stringr)
+  
+  temp_data <- data %>% 
+    rowwise() %>%
+    dplyr::mutate(
+      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean") := mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE),
+      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd") := sd(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE)) %>%
+    ungroup()
+  
+  temp_data <- temp_data %>%
+    rowwise() %>%
+    dplyr::mutate(
+      across(
+        starts_with(item_stem), 
+        ~ (. - get(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean"))) / get(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd")),
+        .names = "{col}_i"
+      )
+    ) %>%
+    ungroup()
+  
+  if (!is.null(remove)) {
+    temp_data2 <- temp_data %>% dplyr::select(-contains(remove))
+  } else {
+    temp_data2 <- temp_data
+  }
+  
+  if (!is.null(group_id)){
+    if (!group_id %in% colnames(data)) {
+      "Error: Specified `group_id` column not found in the dataset."
+    }
+    else {
+      temp_data2 <- temp_data2 %>%
+        mutate(
+          group_id = !!sym(group_id),
+          group = as.numeric(factor(!!sym(group_id))) - 1
+        )
+      print("Groups have been binary coded:")
+      print(addmargins(table(temp_data2$group, temp_data2$group_id)))
+    }
+  }
+  
+# calculate overall alphas
+  
+  hap <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & !ends_with("_i") & 
+        matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  lap <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & !ends_with("_i") & 
+        matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  han <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & !ends_with("_i") & 
+        matches("fear|host|nerv", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  lan <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & !ends_with("_i") & 
+        matches("dull|slee|slug", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  hap_i <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & ends_with("_i") & 
+        matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  lap_i <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & ends_with("_i") & 
+        matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  han_i <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & ends_with("_i") & 
+        matches("fear|host|nerv", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+  
+  lan_i <- temp_data2 %>% 
+    dplyr::select(
+      starts_with(paste(item_stem)) & ends_with("_i") & 
+        matches("dull|slee|slug", ignore.case = TRUE)) %>%
+    psych::alpha(check.keys=FALSE)
+
+  if (!is.null(group_id)){
+    
+    hap_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lap_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    han_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("fear|host|nerv", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lan_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("dull|slee|slug", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    hap_i_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lap_i_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    han_i_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("fear|host|nerv", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lan_i_g0 <- temp_data2 %>% 
+      dplyr::filter(group == 0) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("dull|slee|slug", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    hap_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lap_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    han_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("fear|host|nerv", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lan_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("dull|slee|slug", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    hap_i_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("enth|exci|elat|euph", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lap_i_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("rela|calm|peac|sere", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    han_i_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("fear|host|nerv", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    lan_i_g1 <- temp_data2 %>% 
+      dplyr::filter(group == 1) %>%
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("dull|slee|slug", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+  }
+  
+  if (full_avi == TRUE) {
+    pos <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("happ|cont|sati", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    neg <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("unha|sad|lone", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    pos_i <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("happ|cont|sati", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    neg_i <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("unha|sad|lone", ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    if (!is.null(group_id)){
+      
+      pos_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("happ|cont|sati", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      neg_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("unha|sad|lone", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      pos_i_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("happ|cont|sati", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      neg_i_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("unha|sad|lone", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      pos_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("happ|cont|sati", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      neg_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("unha|sad|lone", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      pos_i_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("happ|cont|sati", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      neg_i_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("unha|sad|lone", ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+    }
+  }
+  
+  if (maximizing_pos == TRUE) {
+    happoslap <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                  ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    hanneglan <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & !ends_with("_i") & 
+          matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                  ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    happoslap_i <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                  ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    hanneglan_i <- temp_data2 %>% 
+      dplyr::select(
+        starts_with(paste(item_stem)) & ends_with("_i") & 
+          matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                  ignore.case = TRUE)) %>%
+      psych::alpha(check.keys=FALSE)
+    
+    if (!is.null(group_id)){
+      
+      happoslap_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      hanneglan_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      happoslap_i_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      hanneglan_i_g0 <- temp_data2 %>% 
+        dplyr::filter(group == 0) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      happoslap_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      hanneglan_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & !ends_with("_i") & 
+            matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      happoslap_i_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+      hanneglan_i_g1 <- temp_data2 %>% 
+        dplyr::filter(group == 1) %>%
+        dplyr::select(
+          starts_with(paste(item_stem)) & ends_with("_i") & 
+            matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", 
+                    ignore.case = TRUE)) %>%
+        psych::alpha(check.keys=FALSE)
+      
+    }
+    
+    
+  }
+  
+  message("AVI Variables Alphas Computed: ")
+  
+  avi_alpha_codebook <- data.frame(
+    variables = c(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP"),
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP"),
+                  
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN"),
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN"),
+                  
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP_i"),
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP_i"),
+                  
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN_i"),
+                  paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN_i")),
+    
+    items = c(temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("enth|exci|elat|euph", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("rela|calm|peac|sere", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("fear|host|nerv", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+              temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")),
+    
+    overall_alpha = c(
+      hap[["alpha.drop"]][["raw_alpha"]][1],
+      lap[["alpha.drop"]][["raw_alpha"]][1],
+      han[["alpha.drop"]][["raw_alpha"]][1],
+      lan[["alpha.drop"]][["raw_alpha"]][1],
+      hap_i[["alpha.drop"]][["raw_alpha"]][1],
+      lap_i[["alpha.drop"]][["raw_alpha"]][1],
+      han_i[["alpha.drop"]][["raw_alpha"]][1],
+      lan_i[["alpha.drop"]][["raw_alpha"]][1]
+      )
+    )
+  
+  if (full_avi == TRUE) {
+    avi_alpha_codebook <- 
+      rbind(
+        avi_alpha_codebook,
+        data.frame(
+          variables = c(
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS_i"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG_i")),
+          items = c(
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & matches("unha|sad|lone", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")),
+          overall_alpha = c(
+            pos[["alpha.drop"]][["raw_alpha"]][1],
+            neg[["alpha.drop"]][["raw_alpha"]][1],
+            pos_i[["alpha.drop"]][["raw_alpha"]][1],
+            neg_i[["alpha.drop"]][["raw_alpha"]][1])
+        ))
+  }
+  
+  if(maximizing_pos == TRUE) {
+    avi_alpha_codebook <- 
+      rbind(
+        avi_alpha_codebook,
+        data.frame(
+          variables = c(
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP_i"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN_i")),
+          items = c(
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & 
+                                           matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & !ends_with("_i") & 
+                                           matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & 
+                                           matches("enth|exci|elat|euph|rela|calm|peac|sere|happ|cont|sati", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", "),
+            temp_data2 %>% dplyr::select(starts_with(paste(item_stem)) & ends_with("_i") & 
+                                           matches("fear|host|nerv|unha|sad|lone|dull|slee|slug", ignore.case = TRUE)) %>% names() %>% paste(collapse = ", ")),
+          overall_alpha = c(
+            happoslap[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan[["alpha.drop"]][["raw_alpha"]][1],
+            happoslap_i[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan_i[["alpha.drop"]][["raw_alpha"]][1])
+        ))
+  }
+  
+  if (!is.null(group_id)){
+    
+    group_alpha <- 
+      data.frame(
+        variables = c(
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAP_i"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAP_i"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAN_i"),
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "LAN_i")),
+        group0_alpha = c(
+          hap_g0[["alpha.drop"]][["raw_alpha"]][1],
+          lap_g0[["alpha.drop"]][["raw_alpha"]][1],
+          han_g0[["alpha.drop"]][["raw_alpha"]][1],
+          lan_g0[["alpha.drop"]][["raw_alpha"]][1],
+          hap_i_g0[["alpha.drop"]][["raw_alpha"]][1],
+          lap_i_g0[["alpha.drop"]][["raw_alpha"]][1],
+          han_i_g0[["alpha.drop"]][["raw_alpha"]][1],
+          lan_i_g0[["alpha.drop"]][["raw_alpha"]][1]),
+        group1_alpha = c(
+          hap_g1[["alpha.drop"]][["raw_alpha"]][1],
+          lap_g1[["alpha.drop"]][["raw_alpha"]][1],
+          han_g1[["alpha.drop"]][["raw_alpha"]][1],
+          lan_g1[["alpha.drop"]][["raw_alpha"]][1],
+          hap_i_g1[["alpha.drop"]][["raw_alpha"]][1],
+          lap_i_g1[["alpha.drop"]][["raw_alpha"]][1],
+          han_i_g1[["alpha.drop"]][["raw_alpha"]][1],
+          lan_i_g1[["alpha.drop"]][["raw_alpha"]][1]))
+    
+    if (full_avi == TRUE) {
+    group_alpha_full <- 
+      data.frame(
+        variables = c(
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS"), 
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG"), 
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "POS_i"), 
+          paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "NEG_i")),
+        group0_alpha = c(
+          pos_g0[["alpha.drop"]][["raw_alpha"]][1],
+          neg_g0[["alpha.drop"]][["raw_alpha"]][1],
+          pos_i_g0[["alpha.drop"]][["raw_alpha"]][1],
+          neg_i_g0[["alpha.drop"]][["raw_alpha"]][1]),
+        group1_alpha = c(
+          pos_g1[["alpha.drop"]][["raw_alpha"]][1],
+          neg_g1[["alpha.drop"]][["raw_alpha"]][1],
+          pos_i_g1[["alpha.drop"]][["raw_alpha"]][1],
+          neg_i_g1[["alpha.drop"]][["raw_alpha"]][1]))
+    
+    group_alpha <- rbind(
+      group_alpha,
+      group_alpha_full)
+    }
+    
+    if (maximizing_pos == TRUE) {
+      group_alpha_max <- 
+        data.frame(
+          variables = c(
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HAPPOSLAP_i"), 
+            paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "HANNEGLAN_i")),
+          group0_alpha = c(
+            happoslap_g0[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan_g0[["alpha.drop"]][["raw_alpha"]][1],
+            happoslap_i_g0[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan_i_g0[["alpha.drop"]][["raw_alpha"]][1]),
+          group1_alpha = c(
+            happoslap_g1[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan_g1[["alpha.drop"]][["raw_alpha"]][1],
+            happoslap_i_g1[["alpha.drop"]][["raw_alpha"]][1],
+            hanneglan_i_g1[["alpha.drop"]][["raw_alpha"]][1]))
+      
+      group_alpha <- rbind(
+        group_alpha,
+        group_alpha_max)
+    }
+          
+    avi_alpha_codebook <- merge(
+      avi_alpha_codebook,
+      group_alpha,
+      by = "variables"
+    )
+  }
+  
+  assign("avi_alpha_codebook", avi_alpha_codebook, envir = .GlobalEnv)
+  message("Check 'avi_alpha_codebook' in environment for alphas.")
+  return(avi_alpha_codebook)
+  }
+  
 
 # --------------------------------------------
 

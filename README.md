@@ -1,9 +1,9 @@
 ### avi_functions
 
 Functions for calculating and plotting AVI variables easily. These are some intended future updates (i.e., currently, the functions are unable to...):
-- Modify `ipsatize_avi()` function to calculate a composite score combining all 3 arousal levels
-- Modify `ipsatize_avi()` function to calculate cronbach alphas
+- Modify `plot_avi()` function to make group_id argument optional
 - Modify `plot_avi()` function to be more modifiable (e.g., color scheme, plot avoided affect, etc.)
+- Generally make the functions neater
 
 ___
 
@@ -27,7 +27,15 @@ All AVI items should start with the same starting string (e.g., "i." for ideal a
 
 Note that functions do not automatically calculate `POS` and `NEG`. Add argument `full_avi = TRUE` if you want to calculate those two variables as well. If you'd like to remove any items (e.g., `euphoric`) from the computation of the composite score(s), specify `remove = "euphoric"`. The remove argument can also be a vector (e.g., `c("euphoric","elated")`), and the function does a `dplyr::select(contains())` search on the specified string/ vector. Add argument `maximizing_pos = TRUE` to calculate maximizing positivity (ideal HAP, POS, and NEG minus ideal HAN, NEG, and LAN).
 
-2. `plot_avi(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsatized_only = TRUE)`
+2. `alphas_avi(data, item_stem, full_avi = FALSE, remove = NULL, maximizing_pos = FALSE, group_id = NULL)`
+
+This is a function for calculating the alpha values of the AVI variables. 
+
+Similar to the first function, All AVI items should start with the same starting string (e.g., "i." for ideal affect AVI items), and the items should contain the names of the emotion.
+
+An optional `group_id` variable can be added to calculate group specific alphas.
+
+3. `plot_avi(data, group_id, full_avi = FALSE, flip_color = FALSE, ipsatized_only = TRUE)`
 
 This is a function for plotting composite AVI scores and getting descriptives for AVI scores. 
 
@@ -52,3 +60,5 @@ ___
 *11 Mar 2026*: Changed tail of ipsatized variables to _i instead of _ip
 
 *24 May 2026*: Changed selecting logic from contain("_i") to ends_with("_i")
+
+*26 Jul 2026*: Added alpha function. Also added some safeguards for re-running the ipsatize avi function.
