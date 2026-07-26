@@ -3,6 +3,7 @@
 Functions for calculating and plotting AVI variables easily. These are some intended future updates (i.e., currently, the functions are unable to...):
 - Modify `plot_avi()` function to make group_id argument optional
 - Modify `plot_avi()` function to be more modifiable (e.g., color scheme, plot avoided affect, etc.)
+- Modify `plot_avi()` function plot predicted instead of raw values
 - Generally make the functions neater
 
 ___
