@@ -220,23 +220,7 @@ alphas_avi <- function(data, item_stem, full_avi = FALSE, remove = NULL, maximiz
   library(dplyr)
   library(stringr)
   
-  temp_data <- data %>% 
-    rowwise() %>%
-    dplyr::mutate(
-      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean") := mean(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE),
-      !!paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd") := sd(c_across(starts_with(paste(item_stem)) & !ends_with("_i")), na.rm = TRUE)) %>%
-    ungroup()
-  
-  temp_data <- temp_data %>%
-    rowwise() %>%
-    dplyr::mutate(
-      across(
-        starts_with(item_stem), 
-        ~ (. - get(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Mean"))) / get(paste0(substr(item_stem, nchar(item_stem) - 1, nchar(item_stem) - 1), "Sd")),
-        .names = "{col}_i"
-      )
-    ) %>%
-    ungroup()
+  temp_data <- data 
   
   if (!is.null(remove)) {
     temp_data2 <- temp_data %>% dplyr::select(-contains(remove))
